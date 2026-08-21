@@ -1,0 +1,16 @@
+{
+  "name": "NiWapi Field App",
+  "short_name": "NiWapi",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f5f5",
+  "theme_color": "#ff0000",
+  "icons": [
+    {
+      "src": "/niwapi-mark.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
