@@ -79,6 +79,8 @@ Urban and peri-urban centers across the Lake Victoria Basin face recurrent flash
 * **Hours 30 – 40:** Implement offline storage, IoT telemetry simulator, end-to-end data flow validation.
 * **Hours 40 – 48:** UI polish, bug fixes, rehearse live interactive demo and slide deck pitch.
 
+**Status:** Hours 00–40 (schema, backend CRUD, AI classification with mock fallback, weather integration, offline sync, telemetry simulator, dispatch/resolution) are done via `feat/backend` — see `docs/Architecture.md` §6 for exactly how the local build diverges from the design above (Docker Postgres instead of hosted Supabase, mock-or-real Gemini). Remaining: demo rehearsal and pitch polish.
+
 ---
 
 ## 7. Live Demo Script (Step-by-Step)
