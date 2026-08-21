@@ -1,0 +1,54 @@
+name: Deploy frontends
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+# Backend (Render) auto-deploys on push to main via its own GitHub integration,
+# set up when the Render Blueprint (render.yaml) was connected to this repo, so
+# it needs no job here. Both frontends were deployed via the Vercel CLI and are
+# not git-connected, so this workflow is what keeps them in sync with main.
+
+jobs:
+  deploy-field-app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install -g vercel@latest
+      - name: Pull Vercel project settings
+        working-directory: frontend-field-app
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_FIELD_APP }}
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Build
+        working-directory: frontend-field-app
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy
+        working-directory: frontend-field-app
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+  deploy-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install -g vercel@latest
+      - name: Pull Vercel project settings
+        working-directory: frontend-municipal-dashboard
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_DASHBOARD }}
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Build
+        working-directory: frontend-municipal-dashboard
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy
+        working-directory: frontend-municipal-dashboard
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
