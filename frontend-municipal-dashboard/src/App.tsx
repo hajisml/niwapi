@@ -197,6 +197,7 @@ function App() {
                       <br />Risk: {r.risk_level} ({r.risk_score?.toFixed(1)})
                       <br />Status: {r.status}
                       {r.details && <><br />{r.details}</>}
+                      <br /><button className="popup-link" type="button" onClick={() => setSelectedReportId(r.id)}>View full report</button>
                     </Popup>
                   </Marker>
                 ))}

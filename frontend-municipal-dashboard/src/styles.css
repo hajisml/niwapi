@@ -23,6 +23,7 @@ body{margin:0;min-width:320px;background:#f5f5f5;color:#121212}
 .risk-actions{display:flex;align-items:center;gap:10px}
 .outline-button{border:1px solid #222;background:#fff;color:#111;border-radius:9px;padding:8px 11px;font-weight:700;font-size:11px;white-space:nowrap}.outline-button:hover{background:#ff0000;color:#fff;border-color:#ff0000}.outline-button:disabled{opacity:.6;cursor:not-allowed}
 .risk-marker span{display:block;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #00000040}
+.popup-link{border:0;background:none;color:#ff0000;font-weight:700;font-size:11px;padding:6px 0 0;text-decoration:underline;cursor:pointer}
 .sensor-marker span{display:block;width:12px;height:12px;border-radius:3px;background:#111;border:2px solid #fff;box-shadow:0 0 0 1px #00000040}
 .dashboard-footer{display:flex;justify-content:space-between;gap:15px;color:#888;font-size:9px;margin-top:18px;padding:0 2px}.dashboard-footer>div{display:flex;align-items:center;gap:7px}.dashboard-footer img{width:25px;height:25px;object-fit:contain}.dashboard-footer strong{color:#111}
 .modal-backdrop{position:fixed;inset:0;background:#00000066;backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:3000}
