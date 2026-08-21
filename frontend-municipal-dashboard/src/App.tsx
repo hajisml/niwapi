@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import { Inbox } from "lucide-react";
+import { ImageOff, Inbox, X } from "lucide-react";
 import L from "leaflet";
 import { api, API_BASE_URL, type ReportOut, type SensorOut, type WorkOrderOut } from "./api";
 import { vulnerabilityScore } from "./risk";
@@ -34,6 +34,60 @@ function Empty({ title, text }: { title: string; text: string }) {
   return <div className="empty"><div className="empty-symbol"><Inbox size={18} /></div><strong>{title}</strong><p>{text}</p></div>;
 }
 
+function ReportModal({ report, onClose }: { report: ReportOut; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    addEventListener("keydown", onKey);
+    return () => removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const level = (report.risk_level ?? "Low").toLowerCase();
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal-card" onClick={(event) => event.stopPropagation()}>
+        <div className="modal-header">
+          <div>
+            <span className={`modal-risk-badge ${level}`}>{report.risk_level ?? "Unclassified"}</span>
+            <h2>{report.blockage_type ?? "Unclassified blockage"}</h2>
+          </div>
+          <button className="modal-close" type="button" onClick={onClose} aria-label="Close report details">
+            <X size={18} />
+          </button>
+        </div>
+
+        {report.image_url ? (
+          <img className="modal-photo" src={report.image_url} alt="Reported drainage blockage" />
+        ) : (
+          <div className="modal-photo modal-photo-empty">
+            <ImageOff size={28} />
+            <span>No photo attached</span>
+          </div>
+        )}
+
+        <div className="modal-grid">
+          <div><span>Severity</span><strong>{report.severity ?? "—"} / 3</strong></div>
+          <div><span>Risk score</span><strong>{report.risk_score?.toFixed(1) ?? "—"}</strong></div>
+          <div><span>Forecast rainfall</span><strong>{report.forecasted_rainfall_mm?.toFixed(1) ?? "—"} mm</strong></div>
+          <div><span>Culvert importance</span><strong>{report.culvert_importance} / 3</strong></div>
+          <div><span>Status</span><strong>{report.status}</strong></div>
+          <div><span>Reported</span><strong>{new Date(report.created_at).toLocaleString()}</strong></div>
+          <div><span>Coordinates</span><strong>{report.latitude?.toFixed(5)}, {report.longitude?.toFixed(5)}</strong></div>
+        </div>
+
+        {report.details && (
+          <div className="modal-notes">
+            <span>Field notes</span>
+            <p>{report.details}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [online, setOnline] = useState(navigator.onLine);
   const [health, setHealth] = useState<"checking" | "ready" | "unreachable">("checking");
@@ -41,7 +95,9 @@ function App() {
   const [sensors, setSensors] = useState<SensorOut[]>([]);
   const [workOrders, setWorkOrders] = useState<WorkOrderOut[]>([]);
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
   const preview = useMemo(() => vulnerabilityScore(3, 3, 0), []);
+  const selectedReport = reports.find((r) => r.id === selectedReportId) ?? null;
 
   const refresh = useCallback(async () => {
     try {
@@ -141,6 +197,7 @@ function App() {
                       <br />Risk: {r.risk_level} ({r.risk_score?.toFixed(1)})
                       <br />Status: {r.status}
                       {r.details && <><br />{r.details}</>}
+                      <br /><button className="popup-link" type="button" onClick={() => setSelectedReportId(r.id)}>View full report</button>
                     </Popup>
                   </Marker>
                 ))}
@@ -181,7 +238,19 @@ function App() {
             ) : (
               <div className="risk-stack">
                 {reports.map((r) => (
-                  <div className={`risk-row ${(r.risk_level ?? "low").toLowerCase()}`} key={r.id}>
+                  <div
+                    className={`risk-row clickable ${(r.risk_level ?? "low").toLowerCase()}`}
+                    key={r.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedReportId(r.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setSelectedReportId(r.id);
+                      }
+                    }}
+                  >
                     <div>
                       <span>{r.blockage_type ?? "Unclassified"}</span>
                       <small>{r.details || "No field notes"} · {r.status}</small>
@@ -189,7 +258,15 @@ function App() {
                     <div className="risk-actions">
                       <strong>{r.risk_score?.toFixed(1) ?? "—"}</strong>
                       {r.status === "pending" && !dispatchedReportIds.has(r.id) && (
-                        <button className="outline-button" type="button" disabled={busyId === r.id} onClick={() => dispatch(r.id)}>
+                        <button
+                          className="outline-button"
+                          type="button"
+                          disabled={busyId === r.id}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            dispatch(r.id);
+                          }}
+                        >
                           {busyId === r.id ? "Dispatching…" : "Dispatch"}
                         </button>
                       )}
@@ -206,12 +283,32 @@ function App() {
             ) : (
               <div className="risk-stack">
                 {openWorkOrders.map((w) => (
-                  <div className="risk-row medium" key={w.id}>
+                  <div
+                    className="risk-row clickable medium"
+                    key={w.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedReportId(w.report_id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setSelectedReportId(w.report_id);
+                      }
+                    }}
+                  >
                     <div>
                       <span>Report #{w.report_id}</span>
                       <small>{w.assigned_team} · dispatched {new Date(w.created_at).toLocaleString()}</small>
                     </div>
-                    <button className="outline-button" type="button" disabled={busyId === w.id} onClick={() => resolve(w.id)}>
+                    <button
+                      className="outline-button"
+                      type="button"
+                      disabled={busyId === w.id}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        resolve(w.id);
+                      }}
+                    >
                       {busyId === w.id ? "Resolving…" : "Mark resolved"}
                     </button>
                   </div>
@@ -236,6 +333,8 @@ function App() {
           <span>All data above is served live by the NiWapi API.</span>
         </footer>
       </main>
+
+      {selectedReport && <ReportModal report={selectedReport} onClose={() => setSelectedReportId(null)} />}
     </div>
   );
 }
