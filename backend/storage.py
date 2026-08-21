@@ -23,7 +23,7 @@ class LocalStorage:
 
 
 class SupabaseStorage:
-    BUCKET = "report-photos"
+    BUCKET = "drainage-images"
 
     def __init__(self, url: str, key: str):
         self.url = url.rstrip("/")

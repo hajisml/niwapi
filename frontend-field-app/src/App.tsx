@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { AlertTriangle, ArrowRight, Camera, CheckCircle2, Globe, ImageOff, LocateFixed, X } from "lucide-react";
 import { api, API_BASE_URL } from "./api";
 import { riskLevel, vulnerabilityScore } from "./risk";
 import "./styles.css";
@@ -268,11 +269,14 @@ function App() {
               <span className="connection-dot" />
               {online ? t.online : t.offline}
             </span>
-            <select aria-label="Language" value={lang} onChange={(event) => setLang(event.target.value as Lang)}>
-              <option value="en">English</option>
-              <option value="sw">Kiswahili</option>
-              <option value="luo">Dholuo</option>
-            </select>
+            <label className="lang-select">
+              <Globe size={14} />
+              <select aria-label="Language" value={lang} onChange={(event) => setLang(event.target.value as Lang)}>
+                <option value="en">English</option>
+                <option value="sw">Kiswahili</option>
+                <option value="luo">Dholuo</option>
+              </select>
+            </label>
           </div>
         </div>
       </header>
@@ -305,7 +309,7 @@ function App() {
           </div>
           <label className="upload-zone">
             <input type="file" accept="image/*" capture="environment" onChange={(event) => capturePhoto(event.target.files?.[0])} />
-            <span className="upload-icon">+</span>
+            <span className="upload-icon"><Camera size={20} /></span>
             <strong>{photo ? "Replace photo" : "Take or choose a photo"}</strong>
             <small>Camera and image library are supported.</small>
           </label>
@@ -323,7 +327,7 @@ function App() {
               <span className="step">02</span>
               <div><h2>{t.gps}</h2><p>Use the device GPS to place the incident accurately.</p></div>
             </div>
-            <button className="outline-button" type="button" onClick={captureGPS}>◎ {t.locate}</button>
+            <button className="outline-button" type="button" onClick={captureGPS}><LocateFixed size={14} /> {t.locate}</button>
           </div>
           <div className="coordinates">
             <span className={lat !== undefined ? "coordinates-live" : ""}>●</span>
@@ -361,10 +365,10 @@ function App() {
           </label>
         </section>
 
-        {message && <div className="notice"><span>!</span><p>{message}</p><button type="button" onClick={() => setMessage("")}>×</button></div>}
+        {message && <div className="notice"><span><AlertTriangle size={13} /></span><p>{message}</p><button type="button" onClick={() => setMessage("")}><X size={16} /></button></div>}
 
         <button className="submit-button" type="button" onClick={saveReport} disabled={saving}>
-          <span>{saving ? "Saving…" : t.save}</span><span>→</span>
+          <span>{saving ? "Saving…" : t.save}</span><ArrowRight size={18} />
         </button>
 
         <section className="card queue-card">
@@ -373,12 +377,12 @@ function App() {
             <span className="queue-count">{queue.length}</span>
           </div>
           {queue.length === 0 ? (
-            <div className="empty-state"><span>✓</span><strong>{t.noQueue}</strong></div>
+            <div className="empty-state"><span><CheckCircle2 size={16} /></span><strong>{t.noQueue}</strong></div>
           ) : (
             <div className="queue-list">
               {queue.slice().reverse().map((draft) => (
                 <article className="queue-item" key={draft.id}>
-                  {draft.photo ? <img src={draft.photo} alt="" /> : <div className="queue-placeholder">NI</div>}
+                  {draft.photo ? <img src={draft.photo} alt="" /> : <div className="queue-placeholder"><ImageOff size={20} /></div>}
                   <div><strong>{draft.blockageType}</strong><span>{new Date(draft.createdAt).toLocaleString()}</span><span>{draft.latitude?.toFixed(5)}, {draft.longitude?.toFixed(5)}</span><em>{syncing ? "Syncing…" : online ? "Waiting to sync" : "Waiting for connection"}</em></div>
                 </article>
               ))}

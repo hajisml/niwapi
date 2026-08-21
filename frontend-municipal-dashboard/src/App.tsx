@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { Inbox } from "lucide-react";
 import L from "leaflet";
 import { api, API_BASE_URL, type ReportOut, type SensorOut, type WorkOrderOut } from "./api";
 import { vulnerabilityScore } from "./risk";
@@ -30,7 +31,7 @@ function Metric({ value, label, accent }: { value: string; label: string; accent
 }
 
 function Empty({ title, text }: { title: string; text: string }) {
-  return <div className="empty"><div className="empty-symbol">—</div><strong>{title}</strong><p>{text}</p></div>;
+  return <div className="empty"><div className="empty-symbol"><Inbox size={18} /></div><strong>{title}</strong><p>{text}</p></div>;
 }
 
 function App() {
