@@ -1,26 +1,26 @@
 import os
+
 import psycopg2
 from dotenv import load_dotenv
 
+
 def init_db():
     load_dotenv(dotenv_path="../.env")
-    
+
     db_url = os.environ.get("DATABASE_URL")
     if not db_url:
-        print("Error: DATABASE_URL not found in .env. Please add your Supabase Postgres connection string.")
+        print("Error: DATABASE_URL not found in .env. Add a local or Supabase Postgres connection string.")
         return
-        
+
     print("Connecting to the database...")
     try:
         conn = psycopg2.connect(db_url)
         conn.autocommit = True
         cursor = conn.cursor()
-        
-        # Enable PostGIS extension
+
         print("Enabling PostGIS extension...")
         cursor.execute("CREATE EXTENSION IF NOT EXISTS postgis;")
-        
-        # Create reports table
+
         print("Creating reports table...")
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS reports (
@@ -33,8 +33,13 @@ def init_db():
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
         """)
-        
-        # Create sensors table
+        cursor.execute("ALTER TABLE reports ADD COLUMN IF NOT EXISTS details TEXT;")
+        cursor.execute("ALTER TABLE reports ADD COLUMN IF NOT EXISTS culvert_importance INT DEFAULT 2;")
+        cursor.execute("ALTER TABLE reports ADD COLUMN IF NOT EXISTS forecasted_rainfall_mm FLOAT;")
+        cursor.execute("ALTER TABLE reports ADD COLUMN IF NOT EXISTS risk_score FLOAT;")
+        cursor.execute("ALTER TABLE reports ADD COLUMN IF NOT EXISTS risk_level VARCHAR(20);")
+        cursor.execute("CREATE INDEX IF NOT EXISTS reports_location_idx ON reports USING GIST (location);")
+
         print("Creating sensors table...")
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS sensors (
@@ -44,8 +49,15 @@ def init_db():
             last_reading TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
         """)
-        
-        # Create work_orders table
+        cursor.execute("ALTER TABLE sensors ADD COLUMN IF NOT EXISTS label VARCHAR(255);")
+        cursor.execute(
+            "DO $$ BEGIN "
+            "IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'sensors_label_key') THEN "
+            "ALTER TABLE sensors ADD CONSTRAINT sensors_label_key UNIQUE (label); "
+            "END IF; END $$;"
+        )
+        cursor.execute("CREATE INDEX IF NOT EXISTS sensors_location_idx ON sensors USING GIST (location);")
+
         print("Creating work_orders table...")
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS work_orders (
@@ -58,13 +70,14 @@ def init_db():
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
         """)
-        
+
         print("Database schema initialized successfully!")
-        
+
         cursor.close()
         conn.close()
     except Exception as e:
         print(f"Failed to initialize database: {e}")
+
 
 if __name__ == "__main__":
     init_db()
