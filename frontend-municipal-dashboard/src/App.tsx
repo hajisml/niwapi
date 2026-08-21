@@ -283,12 +283,32 @@ function App() {
             ) : (
               <div className="risk-stack">
                 {openWorkOrders.map((w) => (
-                  <div className="risk-row medium" key={w.id}>
+                  <div
+                    className="risk-row clickable medium"
+                    key={w.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedReportId(w.report_id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setSelectedReportId(w.report_id);
+                      }
+                    }}
+                  >
                     <div>
                       <span>Report #{w.report_id}</span>
                       <small>{w.assigned_team} · dispatched {new Date(w.created_at).toLocaleString()}</small>
                     </div>
-                    <button className="outline-button" type="button" disabled={busyId === w.id} onClick={() => resolve(w.id)}>
+                    <button
+                      className="outline-button"
+                      type="button"
+                      disabled={busyId === w.id}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        resolve(w.id);
+                      }}
+                    >
                       {busyId === w.id ? "Resolving…" : "Mark resolved"}
                     </button>
                   </div>
