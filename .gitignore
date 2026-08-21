@@ -1,1 +1,205 @@
+# ============================================================
+# NiWapi — Project-wide Git Ignore
+# Backend: Python / FastAPI
+# Frontend: React / Vite / Node
+# ============================================================
+
+
+# ------------------------------------------------------------
+# ENVIRONMENT & SECRETS
+# ------------------------------------------------------------
+
 .env
+.env.*
+!.env.example
+!.env.template
+
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Local credentials / secrets
+secrets/
+credentials/
+*.secret
+*.secrets
+
+
+# ------------------------------------------------------------
+# NODE / REACT / VITE
+# ------------------------------------------------------------
+
+node_modules/
+**/node_modules/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun-debug.log*
+
+.npm/
+.yarn/
+.pnpm-store/
+
+# Vite
+.vite/
+**/.vite/
+
+# Production / build output
+dist/
+**/dist/
+
+build/
+**/build/
+
+# Coverage
+coverage/
+**/coverage/
+
+# TypeScript build cache
+*.tsbuildinfo
+
+
+# ------------------------------------------------------------
+# PYTHON / FASTAPI
+# ------------------------------------------------------------
+
+__pycache__/
+**/__pycache__/
+
+*.py[cod]
+*$py.class
+
+# Python packaging
+.python-version
+.venv/
+venv/
+env/
+ENV/
+**/.venv/
+**/venv/
+
+pip-wheel-metadata/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Python test / tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.hypothesis/
+
+# Coverage
+.coverage
+.coverage.*
+htmlcov/
+
+
+# ------------------------------------------------------------
+# LOCAL DATABASE / DATABASE ARTIFACTS
+# ------------------------------------------------------------
+
+*.sqlite
+*.sqlite3
+*.db
+
+# Database journals / temporary files
+*.db-journal
+*.db-shm
+*.db-wal
+
+
+# ------------------------------------------------------------
+# LOGS / TEMPORARY FILES
+# ------------------------------------------------------------
+
+*.log
+logs/
+**/logs/
+
+tmp/
+temp/
+.tmp/
+**/tmp/
+**/temp/
+
+*.tmp
+*.temp
+
+
+# ------------------------------------------------------------
+# IDE / EDITOR
+# ------------------------------------------------------------
+
+.vscode/
+.idea/
+*.iml
+
+# VS Code local history
+.history/
+
+# Editor swap / backup files
+*.swp
+*.swo
+*~
+*.bak
+
+
+# ------------------------------------------------------------
+# OPERATING SYSTEM FILES
+# ------------------------------------------------------------
+
+.DS_Store
+.DS_Store?
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+
+# ------------------------------------------------------------
+# VERCEL / DEPLOYMENT
+# ------------------------------------------------------------
+
+.vercel/
+**/.vercel/
+
+.netlify/
+**/.netlify/
+
+
+# ------------------------------------------------------------
+# TEST / E2E ARTIFACTS
+# ------------------------------------------------------------
+
+playwright-report/
+test-results/
+blob-report/
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+
+# Temporary test artifacts
+*.snap.tmp
+
+
+# ------------------------------------------------------------
+# LOCAL DEVELOPMENT / GENERATED FILES
+# ------------------------------------------------------------
+
+*.local
+!.env.example
+
+# Generated API/client artifacts
+.openapi/
+.generated/
+
+# OS/editor temporary files
+*.orig
+*.rej
