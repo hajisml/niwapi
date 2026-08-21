@@ -25,44 +25,44 @@ Risk is calculated dynamically:
 
 ## Technology Stack
 
-- **Frontend:** React (Vite) + TypeScript, Tailwind CSS, React-Leaflet
-- **Backend API:** Python, FastAPI, Uvicorn
-- **Database & Storage:** Supabase (PostgreSQL + PostGIS + Storage)
-- **AI / Vision:** Gemini Multimodal Vision API
+- **Frontend:** React (Vite) + TypeScript, React-Leaflet
+- **Backend API:** Python, FastAPI, Uvicorn (uv-managed)
+- **Database & Storage:** Postgres + PostGIS (local via Docker for dev; a hosted Supabase project is a drop-in swap, no code changes)
+- **AI / Vision:** Gemini Multimodal Vision API (falls back to a deterministic mock classifier if no key is configured)
 - **Weather Telemetry:** Open-Meteo API
+- **Dev tooling:** mise (pinned Node/Python), uv (Python env/deps), Docker Compose (local Postgres+PostGIS)
 
 ## Getting Started
 
-*(Note: The project is currently completing Phase 1 of its initial hackathon execution plan. The basic backend API and frontend scaffolding have been initialized.)*
+The backend and both frontends are wired together end-to-end: citizen report → AI classification → rainfall-adjusted risk score → municipal map/dispatch/resolution. A Supabase project and a real Gemini key are optional — local dev works fully without either.
 
 ### Prerequisites
-- Node.js (v18+)
-- Python 3.10+
-- A Supabase Project with PostGIS enabled
-- Gemini Vision API Key
+- [mise](https://mise.jdx.dev/) (pins Node 24 and Python 3.12 for this repo — see `.mise.toml`)
+- Docker (for local Postgres+PostGIS)
+- Optional: a Supabase project and a Gemini Vision API key, for the real (non-local, non-mock) services
 
 ### Environment Setup
-Create a `.env` file in the root directory containing your Supabase connection details:
-```env
-SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_anon_key
-DATABASE_URL=postgresql://postgres:[password]@[host]:5432/postgres
-GEMINI_API_KEY=your_gemini_api_key
+Copy the root `.env.example` to `.env` and adjust if needed — the defaults point at the Docker Postgres container and leave Supabase/Gemini blank (local storage + mock classifier):
+```bash
+cp .env.example .env
 ```
 
 ### Backend (FastAPI)
 ```bash
+docker compose up -d db
 cd backend
-pip install -r requirements.txt
-python init_db.py  # Initializes the PostGIS tables
-uvicorn main:app --reload
+uv sync
+uv run python init_db.py
+uv run python seed.py   # optional: demo reports/sensors across Kisumu hotspots
+uv run uvicorn main:app --reload
 ```
+See `backend/README.md` for the full endpoint list and env var reference.
 
-### Frontend (React PWA)
+### Frontends (React PWAs)
+Two separate apps, each with its own README:
 ```bash
-cd frontend
-npm install
-npm run dev
+cd frontend-field-app && npm install && npm run dev            # citizen reporting PWA
+cd frontend-municipal-dashboard && npm install && npm run dev  # municipal GIS dashboard
 ```
 
 ---
