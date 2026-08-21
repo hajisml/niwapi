@@ -75,6 +75,7 @@ __pycache__/
 
 # Python packaging
 .python-version
+!backend/.python-version
 .venv/
 venv/
 env/
@@ -114,6 +115,14 @@ htmlcov/
 *.db-shm
 *.db-wal
 
+# Locally-stored report photos (local storage fallback, see backend/storage.py)
+backend/media/
+
+
+# ------------------------------------------------------------
+# AI
+# ------------------------------------------------------------
+.claude/
 
 # ------------------------------------------------------------
 # LOGS / TEMPORARY FILES

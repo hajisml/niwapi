@@ -122,6 +122,21 @@ async function getDrafts() {
   });
 }
 
+async function deleteDraft(id: string) {
+  const database = await db;
+  await new Promise<void>((resolve, reject) => {
+    const transaction = database.transaction("reports", "readwrite");
+    transaction.objectStore("reports").delete(id);
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
+}
+
+async function dataUrlToBlob(dataUrl: string): Promise<Blob> {
+  const response = await fetch(dataUrl);
+  return response.blob();
+}
+
 function App() {
   const [lang, setLang] = useState<Lang>("en");
   const t = COPY[lang];
@@ -136,13 +151,45 @@ function App() {
   const [apiState, setApiState] = useState<"checking" | "ready" | "unreachable">("checking");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  const syncQueue = async () => {
+    const pending = await getDrafts();
+    if (pending.length === 0 || syncing) return;
+    setSyncing(true);
+    let synced = 0;
+    for (const draft of pending) {
+      try {
+        if (!draft.photo || draft.latitude === undefined || draft.longitude === undefined) continue;
+        const form = new FormData();
+        form.append("photo", await dataUrlToBlob(draft.photo), "report.jpg");
+        form.append("latitude", String(draft.latitude));
+        form.append("longitude", String(draft.longitude));
+        form.append("details", draft.details);
+        await api.submitReport(form);
+        await deleteDraft(draft.id);
+        synced += 1;
+      } catch {
+        // Stays queued; retried on the next reconnect or app load.
+      }
+    }
+    setQueue(await getDrafts());
+    setSyncing(false);
+    if (synced > 0) setMessage(`${synced} report${synced === 1 ? "" : "s"} synced to NiWapi.`);
+  };
 
   useEffect(() => {
-    const on = () => setOnline(true);
+    const on = () => {
+      setOnline(true);
+      syncQueue();
+    };
     const off = () => setOnline(false);
     addEventListener("online", on);
     addEventListener("offline", off);
-    getDrafts().then(setQueue);
+    getDrafts().then((drafts) => {
+      setQueue(drafts);
+      if (navigator.onLine && drafts.length > 0) syncQueue();
+    });
     api.health().then(() => setApiState("ready")).catch(() => setApiState("unreachable"));
     return () => {
       removeEventListener("online", on);
@@ -202,11 +249,10 @@ function App() {
       };
       await putDraft(draft);
       setQueue(await getDrafts());
-      setMessage(
-        `${t.saved} The supplied backend currently has no report submission route, so the report remains safely queued on this device.`,
-      );
+      setMessage(t.saved);
       setPhoto(undefined);
       setDetails("");
+      if (navigator.onLine) syncQueue();
     } finally {
       setSaving(false);
     }
@@ -301,7 +347,7 @@ function App() {
           <div className={`risk-preview ${level.toLowerCase()}`}>
             <div><span>Preview vulnerability score</span><strong>{score.toFixed(1)}</strong></div>
             <b>{level}</b>
-            <small>Severity × culvert importance + forecast rainfall × 0.5. No rainfall endpoint is currently available in the supplied backend.</small>
+            <small>Severity × culvert importance + forecast rainfall × 0.5. The backend recomputes this from AI classification and live rainfall forecast on submit.</small>
           </div>
 
           <label className="field-label">
@@ -323,7 +369,7 @@ function App() {
 
         <section className="card queue-card">
           <div className="section-heading">
-            <div><span className="step">04</span><div><h2>{t.queue}</h2><p>Reports remain locally stored until the backend provides a submission endpoint.</p></div></div>
+            <div><span className="step">04</span><div><h2>{t.queue}</h2><p>Reports sync to NiWapi automatically once the device is back online.</p></div></div>
             <span className="queue-count">{queue.length}</span>
           </div>
           {queue.length === 0 ? (
@@ -333,7 +379,7 @@ function App() {
               {queue.slice().reverse().map((draft) => (
                 <article className="queue-item" key={draft.id}>
                   {draft.photo ? <img src={draft.photo} alt="" /> : <div className="queue-placeholder">NI</div>}
-                  <div><strong>{draft.blockageType}</strong><span>{new Date(draft.createdAt).toLocaleString()}</span><span>{draft.latitude?.toFixed(5)}, {draft.longitude?.toFixed(5)}</span><em>Awaiting backend report route</em></div>
+                  <div><strong>{draft.blockageType}</strong><span>{new Date(draft.createdAt).toLocaleString()}</span><span>{draft.latitude?.toFixed(5)}, {draft.longitude?.toFixed(5)}</span><em>{syncing ? "Syncing…" : online ? "Waiting to sync" : "Waiting for connection"}</em></div>
                 </article>
               ))}
             </div>

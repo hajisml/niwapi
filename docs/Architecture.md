@@ -146,3 +146,15 @@ Hours 00 - 06 ───► Hours 06 - 18 ───► Hours 18 - 30 ───►
 * **Phase 1 (Validation Pilot):** Partner with LakeHub and Kisumu County Directorate of Environment to pilot NiWapi in two flood-prone informal settlements (e.g., Manyatta and Nyalenda).
 * **Phase 2 (Community Engagement):** Partner with local youth groups and community-based organizations (CBOs) for crowd-mapping drives ahead of the rainy season.
 * **Phase 3 (Regional Expansion):** Scale the SaaS model to neighboring Lake Victoria Basin counties (Siaya, Homa Bay, Busia, Migori) facing identical topography and drainage challenges.
+
+---
+
+## 6. Current Implementation Status
+
+This section stays accurate to what actually runs today; the sections above remain the design vision/target state. See `backend/README.md` and the root `README.md` for setup.
+
+* **Database & Storage:** Local dev runs Postgres+PostGIS via Docker Compose, not hosted Supabase. `DATABASE_URL` works identically against either, so pointing it at a real Supabase Postgres instance is a config change, not a code change. Image storage swaps from local disk to Supabase Storage automatically once `SUPABASE_URL`/`SUPABASE_KEY` are set.
+* **AI / Vision:** Gemini Vision classification is live when `GEMINI_API_KEY` is set; otherwise a deterministic mock classifier stands in (stable per photo, varies across photos), so the full pipeline runs end-to-end without a live key.
+* **Weather Telemetry:** Open-Meteo is live (no key required), with a timeout and 0mm fallback.
+* **Edge Simulation:** `backend/telemetry_simulator.py` is a manually-run script streaming simulated ultrasonic clearance readings for four fixed Kisumu culvert sensors — a stand-in for real IoT hardware, not a deployed edge device.
+* **Risk Calculation Engine, work-order dispatch/resolution, and both frontends' map/incident/dispatch views:** implemented and wired to live data as designed above.
