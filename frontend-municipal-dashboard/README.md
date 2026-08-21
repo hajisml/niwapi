@@ -1,6 +1,6 @@
 # NiWapi Municipal Dashboard
 
-Responsive municipal GIS dashboard using Leaflet/OpenStreetMap. It is intentionally wired only to the endpoints that actually exist in the supplied backend.
+Responsive municipal GIS dashboard using Leaflet/OpenStreetMap, wired to the live NiWapi API.
 
 ## Run
 1. Copy `.env.example` to `.env.local`.
@@ -9,5 +9,5 @@ Responsive municipal GIS dashboard using Leaflet/OpenStreetMap. It is intentiona
 4. `npm run dev`
 5. `npm run build`
 
-## Important backend limitation
-The supplied `backend/main.py` exposes only `GET /` and `GET /health`. Although `init_db.py` defines `reports`, `sensors` and `work_orders` tables, no CRUD API routes are implemented. The dashboard therefore shows truthful empty states rather than fabricated incidents, sensors or dispatch records.
+## Backend integration
+Reports, sensors, and work orders are fetched from the backend on load and re-polled every 15 seconds; map markers are colored by computed risk level. The incident list's Dispatch button and the work-order panel's Mark-resolved button call the backend directly (`POST /work-orders`, `PATCH /work-orders/{id}/resolve`). The `Empty` state still shows when a list is genuinely empty — e.g. no reports submitted yet — not because an endpoint is missing.

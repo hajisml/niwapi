@@ -8,3 +8,6 @@ PWA/mobile-first citizen reporting client. It captures camera images, GPS, multi
 3. `npm install`
 4. `npm run dev`
 5. `npm run build`
+
+## Backend integration
+Submitting a report queues it to IndexedDB first (offline-safe), then POSTs it to the backend's `POST /reports` immediately if online. Anything still queued syncs automatically on the next reconnect or app load — no manual retry needed.
