@@ -1,10 +1,12 @@
-import os
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from supabase import create_client, Client
-from dotenv import load_dotenv
+from fastapi.staticfiles import StaticFiles
 
-# Load environment variables
+import db
+from routers import reports, sensors, work_orders
+from storage import MEDIA_DIR
+
 load_dotenv(dotenv_path="../.env")
 
 app = FastAPI(
@@ -13,7 +15,6 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS setup
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Adjust this in production
@@ -22,20 +23,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize Supabase client
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/media", StaticFiles(directory=MEDIA_DIR), name="media")
 
-supabase: Client | None = None
-if SUPABASE_URL and SUPABASE_KEY:
-    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-else:
-    print("WARNING: Supabase credentials not found in environment variables.")
+app.include_router(reports.router)
+app.include_router(sensors.router)
+app.include_router(work_orders.router)
+
 
 @app.get("/")
 def read_root():
     return {"message": "Welcome to NiWapi API"}
 
+
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "supabase_connected": supabase is not None}
+    return {"status": "ok", "database_connected": db.ping()}
