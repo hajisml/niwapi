@@ -4,6 +4,14 @@
 
 Built for the **Zone01 Kisumu GreenTech Hackathon 2026**, Track 6: Climate Risk Intelligence & Resilience Platform.
 
+## Live Demo
+
+- **Citizen field app:** https://niwapi.vercel.app
+- **Municipal dashboard:** https://niwapi-municipal.vercel.app
+- **Backend API:** https://niwapi-backend.onrender.com (docs at `/docs`)
+
+The backend is on Render's free tier, which spins down after ~15 minutes idle — the first request after a gap can take 20-30s to wake up.
+
 ## The Problem
 Urban and peri-urban centers across the Lake Victoria Basin face recurrent flash floods driven by extreme weather events and unmanaged surface runoff. While regional weather warning systems exist, urban flood vulnerability is heavily aggravated by local drainage failures (e.g., stormwater channels blocked by solid waste, siltation). Remediation is traditionally reactive—teams deploy *after* damage occurs.
 
